@@ -32,8 +32,8 @@ export async function apiClient(endpoint: string, options: RequestOptions = {}) 
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 ...authHeader,
-                ...headers,
-            },
+                ...(headers as any),
+            } as any,
             ...rest,
         });
 
