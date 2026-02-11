@@ -9,7 +9,7 @@ import { LoadingState } from '../../../../components/LoadingState';
 import { useMe } from '../../../../lib/useMe';
 import {
     MessageSquare, AlertCircle, FileText, Upload,
-    X, Paperclip, Send
+    X, Paperclip, Send, User
 } from 'lucide-react';
 
 export default function NewRequest() {
