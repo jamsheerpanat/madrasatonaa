@@ -19,6 +19,8 @@ git push origin main
 
 # 2. Upload Base Production Database (Resetting Server Data)
 echo "🔄 Overwriting Server Database with Clean Base..."
+cp "$LOCAL_API_DIR/database/database.sqlite" "$PRODUCTION_DB_BACKUP"
+
 if [ -f "$PRODUCTION_DB_BACKUP" ]; then
     rsync -avz -e "ssh -i $SSH_KEY" "$PRODUCTION_DB_BACKUP" "$SERVER_USER@$SERVER_IP:$REMOTE_API_DIR/database/database.sqlite"
 else
