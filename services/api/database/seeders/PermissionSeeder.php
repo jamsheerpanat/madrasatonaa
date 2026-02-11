@@ -99,6 +99,8 @@ class PermissionSeeder extends Seeder
                 'structure.view',
                 'structure.manage',
                 'students.view',
+                'students.create',
+                'students.update',
                 'students.export',
                 'timetable.manage',
                 'timetable.view',
