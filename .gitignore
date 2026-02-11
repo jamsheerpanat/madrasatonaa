@@ -47,8 +47,8 @@ yarn-error.log
 .env.development.local
 .env.test.local
 .env.production.local
-*.env
-*.env.*
+# *.env (Removed to allow .env.example)
+# *.env.* (Removed to allow .env.example)
 
 # Editor directories and files
 .idea
