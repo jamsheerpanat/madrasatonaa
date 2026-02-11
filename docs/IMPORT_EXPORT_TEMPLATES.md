@@ -1,0 +1,11 @@
+- Excel imports supported:
+  - Students
+  - Guardians
+  - Student enrollments
+- Exports supported:
+  - Attendance registers (PDF + Excel)
+  - Report cards (PDF)
+- All imports must support:
+  - Validation
+  - Preview
+  - Audit logging
