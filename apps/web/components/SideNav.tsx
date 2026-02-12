@@ -6,7 +6,7 @@ import {
     LayoutDashboard, Clock, User, Shield, LogOut, Calendar,
     ClipboardCheck, Megaphone, Inbox, BookOpen, GraduationCap,
     MessageSquare, Settings, ChevronRight, PieChart, Users,
-    FileText, Bell, Search, Command
+    FileText, Bell, Search, Command, UserCheck
 } from 'lucide-react';
 import { authService } from '../services/auth';
 import { useState } from 'react';
@@ -39,6 +39,7 @@ export function SideNav() {
         ...(isPrincipal || permissions.includes('tickets.view') ? [{ name: 'Support Tickets', href: '/app/requests', icon: MessageSquare, group: 'Support' }] : []),
 
         ...(isPrincipal || permissions.includes('students.view') ? [{ name: 'Students', href: '/app/admin/students', icon: Users, group: 'Administration' }] : []),
+        ...(isPrincipal ? [{ name: 'Parents', href: '/app/admin/parents', icon: UserCheck, group: 'Administration' }] : []),
         ...(isPrincipal || permissions.includes('admin.users.manage') ? [{ name: 'Staff', href: '/app/admin/staff', icon: Shield, group: 'Administration' }] : []),
         ...(isPrincipal || permissions.includes('structure.view') ? [{ name: 'Subjects', href: '/app/admin/structure', icon: BookOpen, group: 'Administration' }] : []),
         ...(isPrincipal ? [{ name: 'User Directory', href: '/app/users', icon: Users, group: 'Administration' }] : []),
