@@ -33,6 +33,7 @@ echo "🔧 Running Server Deployment Scripts..."
 ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP <<EOF
     # API Setup
     cd $REMOTE_API_DIR
+    git reset --hard HEAD
     git pull origin main
     
     # Ensure correct permissions for DB and Storage
