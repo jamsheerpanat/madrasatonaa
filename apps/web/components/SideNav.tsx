@@ -2,104 +2,132 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMe } from '../lib/useMe';
-import { LayoutDashboard, Clock, User, Shield, LogOut, Calendar, ClipboardCheck, Megaphone, Inbox, BookOpen, GraduationCap, MessageSquare, Menu, X } from 'lucide-react';
+import {
+    LayoutDashboard, Clock, User, Shield, LogOut, Calendar,
+    ClipboardCheck, Megaphone, Inbox, BookOpen, GraduationCap,
+    MessageSquare, Settings, ChevronRight, PieChart, Users,
+    FileText, Bell, Search, Command
+} from 'lucide-react';
 import { authService } from '../services/auth';
+import { useState } from 'react';
 
 export function SideNav() {
     const pathname = usePathname();
     const { me } = useMe();
+    const [collapsed, setCollapsed] = useState(false);
 
     if (!me) return null;
 
     const permissions = Array.isArray(me.permissions) ? me.permissions : [];
     const isPrincipal = me.roles?.some((r: any) => ['Principal', 'OfficeAdmin'].includes(r.name));
 
-    // Group navigation items for cleaner structure if needed, or flat list with headers
     const navItems = [
-        // Core
-        { name: 'Timeline', href: '/app/timeline', icon: Clock, group: 'Overview' },
+        { name: 'Dashboard', href: '/app', icon: LayoutDashboard, group: 'Main' },
+        { name: 'Timeline', href: '/app/timeline', icon: Clock, group: 'Main' },
 
-        // Dashboards
-        ...(permissions.includes('principal.dashboard.view') ? [{ name: 'Rhythm Dashboard', href: '/app/principal/dashboard', icon: LayoutDashboard, group: 'Overview' }] : []),
+        ...(permissions.includes('principal.dashboard.view') ? [{ name: 'Rhythm', href: '/app/principal/dashboard', icon: PieChart, group: 'Main' }] : []),
 
-        // Academic
-        ...(permissions.includes('timetable.view') ? [{ name: 'Timetable', href: '/app/timetable', icon: Calendar, group: 'Academic' }] : []),
-        ...(permissions.includes('attendance.view') ? [{ name: 'Attendance', href: '/app/attendance', icon: ClipboardCheck, group: 'Academic' }] : []),
+        { name: 'Timetable', href: '/app/timetable', icon: Calendar, group: 'Academic' },
+        { name: 'Attendance', href: '/app/attendance', icon: ClipboardCheck, group: 'Academic' },
 
-        // Communication
-        ...(isPrincipal || permissions.includes('announcements.view') || permissions.includes('announcements.publish') ? [{ name: 'Announcements', href: '/app/announcements', icon: Megaphone, group: 'Communication' }] : []),
-        ...(isPrincipal || permissions.includes('memos.view') || permissions.includes('memos.publish') ? [{ name: 'Memos', href: '/app/memos', icon: Inbox, group: 'Communication' }] : []),
+        ...(isPrincipal || permissions.includes('announcements.view') ? [{ name: 'Broadcasts', href: '/app/announcements', icon: Megaphone, group: 'Communication' }] : []),
+        ...(isPrincipal || permissions.includes('memos.view') ? [{ name: 'Memos', href: '/app/memos', icon: Inbox, group: 'Communication' }] : []),
 
-        // Coursework
         ...(isPrincipal || permissions.includes('assignments.view') ? [{ name: 'Assignments', href: '/app/assignments', icon: BookOpen, group: 'Learning' }] : []),
         ...(isPrincipal || permissions.includes('exams.view') ? [{ name: 'Exams & Results', href: '/app/exams', icon: GraduationCap, group: 'Learning' }] : []),
 
-        // Requests
-        ...(isPrincipal || permissions.includes('tickets.view') || permissions.includes('tickets.create') ? [{ name: 'Requests', href: '/app/requests', icon: MessageSquare, group: 'Support' }] : []),
+        ...(isPrincipal || permissions.includes('tickets.view') ? [{ name: 'Support Tickets', href: '/app/requests', icon: MessageSquare, group: 'Support' }] : []),
 
-        // Masters (Admin / Principal / HOD)
-        ...(isPrincipal || permissions.includes('students.view') ? [{ name: 'Student Master', href: '/app/admin/students', icon: GraduationCap, group: 'Administration' }] : []),
-        ...(isPrincipal || permissions.includes('admin.users.manage') ? [{ name: 'Staff Master', href: '/app/admin/staff', icon: Shield, group: 'Administration' }] : []),
-        ...(isPrincipal || permissions.includes('structure.view') ? [{ name: 'Subject Master', href: '/app/admin/structure', icon: BookOpen, group: 'Administration' }] : []),
+        ...(isPrincipal || permissions.includes('students.view') ? [{ name: 'Students', href: '/app/admin/students', icon: Users, group: 'Administration' }] : []),
+        ...(isPrincipal || permissions.includes('admin.users.manage') ? [{ name: 'Staff', href: '/app/admin/staff', icon: Shield, group: 'Administration' }] : []),
 
         { name: 'Profile', href: '/app/profile', icon: User, group: 'Account' },
+        { name: 'Settings', href: '/app/settings', icon: Settings, group: 'Account' },
     ];
 
-    // Helper to render groups
-    const groups = ['Overview', 'Academic', 'Communication', 'Learning', 'Support', 'Administration', 'Account'];
-
-    // Check if a group has any visible items
+    const groups = ['Main', 'Academic', 'Communication', 'Learning', 'Support', 'Administration', 'Account'];
     const visibleGroups = groups.filter(g => navItems.some(i => i.group === g));
 
     return (
-        <div className="w-72 bg-[#0f172a] text-slate-300 flex flex-col h-full fixed left-0 top-0 bottom-0 z-20 shadow-2xl border-r border-slate-800">
-            {/* Header / Logo */}
-            <div className="h-24 flex items-center px-6 border-b border-slate-800/50 bg-slate-900/50 backdrop-blur-sm">
-                <Link href="/app" className="flex items-center gap-3 group transition-all">
-                    <div className="bg-white p-2 rounded-xl shadow-lg ring-1 ring-white/10 group-hover:scale-105 transition-transform duration-300">
-                        <img
-                            src="/logo.png"
-                            alt="Madrasatonaa"
-                            className="h-8 w-auto object-contain"
-                        />
+        <aside
+            className={`${collapsed ? 'w-20' : 'w-72'} bg-[#0f172a] text-slate-300 flex flex-col h-screen sticky top-0 z-50 shadow-2xl border-r border-slate-800 transition-all duration-300 ease-in-out flex-shrink-0`}
+        >
+            {/* Header */}
+            <div className={`h-20 flex items-center ${collapsed ? 'justify-center' : 'px-6'} border-b border-slate-800/50 bg-slate-900/50 backdrop-blur-md relative`}>
+                <Link href="/app" className="flex items-center gap-3 group">
+                    <div className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300">
+                        {/* Placeholder Logo Icon */}
+                        <div className="w-5 h-5 border-2 border-white rounded-md flex items-center justify-center">
+                            <span className="text-[10px] font-bold text-white">M</span>
+                        </div>
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-white font-bold tracking-tight">Madrasatonaa</span>
-                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">School OS</span>
-                    </div>
+                    {!collapsed && (
+                        <div className="flex flex-col animate-in fade-in slide-in-from-left-2 duration-300">
+                            <span className="text-white font-bold tracking-tight text-lg">Madrasatonaa</span>
+                            <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">School OS</span>
+                        </div>
+                    )}
                 </Link>
+                <button
+                    onClick={() => setCollapsed(!collapsed)}
+                    className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-indigo-600 transition-all shadow-lg z-50 opacity-0 group-hover:opacity-100 peer-hover:opacity-100"
+                >
+                    <ChevronRight className={`w-3 h-3 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
+                </button>
             </div>
 
+            {/* Global Search Trigger (Mini) */}
+            {!collapsed && (
+                <div className="px-4 py-4">
+                    <button className="w-full bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl px-3 py-2.5 flex items-center gap-2 text-sm text-slate-400 transition-all group">
+                        <Search className="w-4 h-4 group-hover:text-indigo-400" />
+                        <span className="flex-1 text-left">Quick Search...</span>
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-900 border border-slate-700 text-[10px] font-mono">
+                            <Command className="w-3 h-3" /> K
+                        </div>
+                    </button>
+                </div>
+            )}
+
             {/* Navigation */}
-            <nav className="flex-1 px-4 py-6 space-y-8 overflow-y-auto custom-scrollbar">
+            <nav className="flex-1 px-3 py-2 space-y-6 overflow-y-auto custom-scrollbar">
                 {visibleGroups.map(group => {
                     const groupItems = navItems.filter(i => i.group === group);
                     if (groupItems.length === 0) return null;
 
                     return (
                         <div key={group} className="space-y-1">
-                            <h3 className="px-3 text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">
-                                {group}
-                            </h3>
+                            {!collapsed && (
+                                <h3 className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-slate-600 mb-2 mt-4 first:mt-0">
+                                    {group}
+                                </h3>
+                            )}
                             {groupItems.map((item) => {
-                                const isActive = pathname === item.href;
+                                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
                                 const Icon = item.icon;
 
                                 return (
                                     <Link
                                         key={item.href}
                                         href={item.href}
-                                        className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative overflow-hidden ${isActive
-                                            ? 'bg-indigo-600/10 text-white shadow-sm'
-                                            : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                                        className={`group flex items-center ${collapsed ? 'justify-center p-3' : 'px-3 py-2.5'} text-sm font-medium rounded-xl transition-all duration-200 relative ${isActive
+                                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/20'
+                                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                                             }`}
+                                        title={collapsed ? item.name : undefined}
                                     >
-                                        {isActive && (
-                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-500 rounded-r-full shadow-[0_0_12px_rgba(99,102,241,0.5)]" />
+                                        <Icon className={`w-5 h-5 ${!collapsed && 'mr-3'} transition-all ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-white'}`} />
+
+                                        {!collapsed && (
+                                            <>
+                                                <span className="flex-1">{item.name}</span>
+                                                {isActive && <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm" />}
+                                            </>
                                         )}
-                                        <Icon className={`w-5 h-5 mr-3 transition-colors ${isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'
-                                            }`} />
-                                        {item.name}
+
+                                        {collapsed && isActive && (
+                                            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-l-full" />
+                                        )}
                                     </Link>
                                 );
                             })}
@@ -108,29 +136,37 @@ export function SideNav() {
                 })}
             </nav>
 
-            {/* Footer / User Profile */}
-            <div className="p-4 border-t border-slate-800 bg-slate-900/30">
-                <div className="flex items-center gap-3 mb-4 px-2">
-                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white ring-2 ring-slate-800">
-                        {me.user.full_name?.charAt(0)}
+            {/* User Profile */}
+            <div className={`p-4 border-t border-slate-800 bg-slate-900/30 backdrop-blur-sm ${collapsed ? 'flex flex-col items-center' : ''}`}>
+                <div className={`flex items-center gap-3 mb-3 ${collapsed ? 'justify-center' : ''}`}>
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 p-0.5 shadow-lg relative group cursor-pointer">
+                        <div className="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center text-indigo-400 font-bold text-sm group-hover:bg-transparent group-hover:text-white transition-all">
+                            {me.user.full_name?.charAt(0)}
+                        </div>
+                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full"></span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">
-                            {me.user.full_name}
-                        </p>
-                        <p className="text-xs text-slate-500 truncate capitalize">
-                            {me.user.user_type.toLowerCase()}
-                        </p>
-                    </div>
+
+                    {!collapsed && (
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                            <p className="text-sm font-bold text-white truncate">
+                                {me.user.full_name}
+                            </p>
+                            <p className="text-xs text-slate-500 truncate capitalize flex items-center gap-1">
+                                {me.user.user_type.toLowerCase()} • <span className="text-green-500">Online</span>
+                            </p>
+                        </div>
+                    )}
                 </div>
+
                 <button
                     onClick={() => authService.logout()}
-                    className="flex items-center justify-center w-full px-4 py-2 text-xs font-bold uppercase tracking-wider text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg hover:bg-red-500/20 hover:text-red-300 transition-all group"
+                    className={`flex items-center justify-center w-full ${collapsed ? 'p-3' : 'px-4 py-2.5'} text-xs font-bold uppercase tracking-wider text-red-400 bg-red-500/10 border border-red-500/10 rounded-xl hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-300 transition-all group`}
+                    title="Sign Out"
                 >
-                    <LogOut className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-transform" />
-                    Sign Out
+                    <LogOut className={`w-4 h-4 ${!collapsed && 'mr-2'} group-hover:scale-110 transition-transform`} />
+                    {!collapsed && "Sign Out"}
                 </button>
             </div>
-        </div>
+        </aside>
     );
 }

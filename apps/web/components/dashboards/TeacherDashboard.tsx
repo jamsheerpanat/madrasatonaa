@@ -82,7 +82,7 @@ export function TeacherDashboard() {
             {/* Quick Actions Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                    { name: 'Assignments', href: '/app/assignments', icon: FileText, color: 'text-orange-600', bg: 'bg-orange-50', count: assignments.length },
+                    { name: 'Assignments', href: '/app/assignments', icon: FileText, color: 'text-orange-600', bg: 'bg-orange-50', count: assignments.filter(a => new Date(a.due_at) >= new Date()).length },
                     { name: 'Exams & Grades', href: '/app/exams', icon: Layers, color: 'text-purple-600', bg: 'bg-purple-50' },
                     { name: 'Memos', href: '/app/memos', icon: BookOpen, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                     { name: 'Profile', href: '/app/profile', icon: Users, color: 'text-pink-600', bg: 'bg-pink-50' },

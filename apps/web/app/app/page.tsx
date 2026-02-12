@@ -17,7 +17,7 @@ export default function Dashboard() {
     if (!me) return null;
 
     // specific role checks
-    const roles = me.roles?.map((r: any) => r.name) || [];
+    const roles = me.roles?.map((r: any) => r.name.toUpperCase()) || [];
     const type = me.user_type;
 
     if (type === 'STUDENT') {
@@ -32,7 +32,7 @@ export default function Dashboard() {
         return <PrincipalDashboard />;
     }
 
-    if (roles.includes('TEACHER') || roles.includes('STAFF_TEACHING')) { // Adjust based on actual role names
+    if (roles.includes('TEACHER') || roles.includes('STAFF_TEACHING')) {
         return <TeacherDashboard />;
     }
 

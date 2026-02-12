@@ -22,6 +22,7 @@ export function StudentDashboard() {
     const [timetable, setTimetable] = useState<any[]>([]);
     const [assignments, setAssignments] = useState<any[]>([]);
     const [attendance, setAttendance] = useState<any[]>([]);
+    const [exams, setExams] = useState<any[]>([]);
 
     useEffect(() => {
         const hour = new Date().getHours();
@@ -39,15 +40,17 @@ export function StudentDashboard() {
     const fetchDashboardData = async () => {
         setLoading(true);
         try {
-            const [ttRes, asgnRes, attRes] = await Promise.all([
+            const [ttRes, asgnRes, attRes, examRes] = await Promise.all([
                 apiClient(`/timetable/section/${section.id}`),
                 apiClient(`/assignments/section/${section.id}`),
-                apiClient(`/attendance/child/${student.id}/month`)
+                apiClient(`/attendance/child/${student.id}/month`),
+                apiClient(`/exams/section/${section.id}`)
             ]);
 
             if (ttRes.ok) setTimetable(await ttRes.json());
             if (asgnRes.ok) setAssignments(await asgnRes.json());
             if (attRes.ok) setAttendance(await attRes.json());
+            if (examRes.ok) setExams(await examRes.json());
         } catch (err) {
             console.error('Error fetching dashboard data:', err);
         } finally {
@@ -69,6 +72,10 @@ export function StudentDashboard() {
     const attendanceRate = attendance.length > 0
         ? Math.round((attendance.filter(r => r.status === 'PRESENT').length / attendance.length) * 100)
         : 100;
+
+    const nextExam = exams
+        .filter((e: any) => new Date(e.exam_date) >= new Date())
+        .sort((a: any, b: any) => new Date(a.exam_date).getTime() - new Date(b.exam_date).getTime())[0];
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
@@ -111,7 +118,7 @@ export function StudentDashboard() {
                     { label: 'Attendance', value: `${attendanceRate}%`, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
                     { label: 'Assignments', value: `${assignments.length} Total`, icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
                     { label: 'Avg Grade', value: 'A-', icon: BarChart2, color: 'text-purple-600', bg: 'bg-purple-50' },
-                    { label: 'Next Exam', value: '--', icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50' },
+                    { label: 'Next Exam', value: nextExam ? new Date(nextExam.exam_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '--', icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50' },
                 ].map((stat) => (
                     <div key={stat.label} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:border-indigo-100 hover:shadow-md transition-all">
                         <div className={`w-12 h-12 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center mb-3 shadow-inner`}>
