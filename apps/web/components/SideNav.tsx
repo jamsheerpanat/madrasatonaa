@@ -19,13 +19,13 @@ export function SideNav() {
     if (!me) return null;
 
     const permissions = Array.isArray(me.permissions) ? me.permissions : [];
-    const isPrincipal = me.roles?.some((r: any) => ['Principal', 'OfficeAdmin'].includes(r.name));
+    const isPrincipal = me.roles?.some((r: any) => ['PRINCIPAL', 'OFFICEADMIN', 'SUPER_ADMIN'].includes(r.name?.toUpperCase()));
 
     const navItems = [
         { name: 'Dashboard', href: '/app', icon: LayoutDashboard, group: 'Main' },
         { name: 'Timeline', href: '/app/timeline', icon: Clock, group: 'Main' },
 
-        ...(permissions.includes('principal.dashboard.view') ? [{ name: 'Rhythm', href: '/app/principal/dashboard', icon: PieChart, group: 'Main' }] : []),
+        ...(permissions.includes('principal.dashboard.view') || isPrincipal ? [{ name: 'Rhythm', href: '/app/principal/dashboard', icon: PieChart, group: 'Main' }] : []),
 
         { name: 'Timetable', href: '/app/timetable', icon: Calendar, group: 'Academic' },
         { name: 'Attendance', href: '/app/attendance', icon: ClipboardCheck, group: 'Academic' },
@@ -40,6 +40,8 @@ export function SideNav() {
 
         ...(isPrincipal || permissions.includes('students.view') ? [{ name: 'Students', href: '/app/admin/students', icon: Users, group: 'Administration' }] : []),
         ...(isPrincipal || permissions.includes('admin.users.manage') ? [{ name: 'Staff', href: '/app/admin/staff', icon: Shield, group: 'Administration' }] : []),
+        ...(isPrincipal || permissions.includes('structure.view') ? [{ name: 'Subjects', href: '/app/admin/structure', icon: BookOpen, group: 'Administration' }] : []),
+        ...(isPrincipal ? [{ name: 'User Directory', href: '/app/users', icon: Users, group: 'Administration' }] : []),
 
         { name: 'Profile', href: '/app/profile', icon: User, group: 'Account' },
         { name: 'Settings', href: '/app/settings', icon: Settings, group: 'Account' },
