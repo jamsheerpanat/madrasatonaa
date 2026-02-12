@@ -174,6 +174,7 @@ Route::prefix('v1')->group(function () {
                 Route::post('/users', [UserController::class, 'store']);
                 Route::get('/users/{id}', [UserController::class, 'show']);
                 Route::post('/users/{id}/reset-password', [UserController::class, 'resetPassword']);
+                Route::put('/users/{id}', [UserController::class, 'update']);
             });
 
             Route::apiResource('subjects', App\Http\Controllers\Api\V1\Admin\SubjectController::class)

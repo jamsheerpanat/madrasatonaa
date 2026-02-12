@@ -7,8 +7,17 @@ use App\Models\Subject;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+use App\Services\CodeGeneratorService;
+
 class SubjectController extends Controller
 {
+    protected $codeGenerator;
+
+    public function __construct(CodeGeneratorService $codeGenerator)
+    {
+        $this->codeGenerator = $codeGenerator;
+    }
+
     public function index(Request $request): JsonResponse
     {
         $subjects = Subject::with('branch')->get();
@@ -19,7 +28,7 @@ class SubjectController extends Controller
     {
         $validated = $request->validate([
             'branch_id' => 'required|exists:branches,id',
-            'code' => 'required|string|unique:subjects,code',
+            'code' => 'nullable|string|unique:subjects,code',
             'name_en' => 'required|string',
             'name_ar' => 'nullable|string',
             'type' => 'required|in:MANDATORY,ELECTIVE,EXTRA_CURRICULAR',
@@ -28,6 +37,10 @@ class SubjectController extends Controller
             'max_marks' => 'required|integer|min:1',
             'description' => 'nullable|string',
         ]);
+
+        if (empty($validated['code'])) {
+            $validated['code'] = $this->codeGenerator->generate(Subject::class, 'SUB', 'code', 3);
+        }
 
         // Map legacy 'name' for backward compatibility
         $data = $validated;

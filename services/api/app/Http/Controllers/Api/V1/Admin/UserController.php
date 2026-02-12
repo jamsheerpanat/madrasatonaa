@@ -69,6 +69,30 @@ class UserController extends Controller
         return response()->json($user, 201);
     }
 
+    public function update(Request $request, $id): JsonResponse
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'full_name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|unique:users,phone,' . $user->id,
+            'password' => 'nullable|string|min:6',
+            'user_type' => 'sometimes|in:STAFF,PARENT,STUDENT',
+            'branch_id' => 'nullable|exists:branches,id',
+            'roles' => 'sometimes|array',
+            'roles.*' => 'exists:roles,name',
+            // Optional fields
+            'employee_code' => 'nullable|string',
+            'job_title' => 'nullable|string',
+            'national_id' => 'nullable|string',
+        ]);
+
+        $user = $this->userService->updateUser($user, $validated);
+
+        return response()->json($user);
+    }
+
     public function resetPassword(Request $request, $id): JsonResponse
     {
         $request->validate([

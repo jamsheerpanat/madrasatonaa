@@ -6,8 +6,16 @@ use App\Models\Enrollment;
 use App\Models\Student;
 use Carbon\Carbon;
 
+
 class StudentService
 {
+    protected $codeGenerator;
+
+    public function __construct(CodeGeneratorService $codeGenerator)
+    {
+        $this->codeGenerator = $codeGenerator;
+    }
+
     /**
      * Create a student and enroll them.
      */
@@ -29,15 +37,23 @@ class StudentService
 
             // Assign Student Role (assuming Role model handles this)
             $role = \App\Models\Role::where('name', 'Student')->first();
+            $branchId = null;
+
             if ($role) {
                 $section = \App\Models\Section::with('grade')->find($data['section_id']);
                 $branchId = $section ? $section->grade->branch_id : null;
                 $user->roles()->attach($role->id, ['branch_id' => $branchId]);
             }
 
+            // Generate Student Code if not provided
+            $admissionNumber = $data['student_code'] ?? null;
+            if (!$admissionNumber) {
+                $admissionNumber = $this->codeGenerator->generate(Student::class, 'ADM', 'admission_number', 5);
+            }
+
             // 2. Create Student record
             $student = Student::create([
-                'admission_number' => $data['student_code'],
+                'admission_number' => $admissionNumber,
                 'user_id' => $user->id,
                 'first_name_en' => $firstName,
                 'last_name_en' => $lastName,

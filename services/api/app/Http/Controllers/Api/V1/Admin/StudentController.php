@@ -8,6 +8,7 @@ use App\Services\StudentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Student;
+use App\Models\Guardian;
 
 class StudentController extends Controller
 {
@@ -104,7 +105,7 @@ class StudentController extends Controller
     /**
      * Create or Link a guardian to a student.
      */
-    public function addGuardian(Request $request, int $studentId): JsonResponse
+    public function addGuardian(Request $request, int $id): JsonResponse
     {
         try {
             $validated = $request->validate([
@@ -117,27 +118,32 @@ class StudentController extends Controller
             ]);
 
             // 1. Check if user already exists
-            $user = null;
-            if ($validated['phone']) {
-                $user = \App\Models\User::where('phone', $validated['phone'])->first();
-            } elseif ($validated['email']) {
-                $user = \App\Models\User::where('email', $validated['email'])->first();
+            $userByPhone = !empty($validated['phone']) ? \App\Models\User::where('phone', $validated['phone'])->first() : null;
+            $userByEmail = !empty($validated['email']) ? \App\Models\User::where('email', $validated['email'])->first() : null;
+
+            if ($userByPhone && $userByEmail && $userByPhone->id !== $userByEmail->id) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'phone' => ['Phone number belongs to a different user than the email address.'],
+                    'email' => ['Email address belongs to a different user than the phone number.']
+                ]);
             }
+
+            $user = $userByPhone ?? $userByEmail;
 
             if (!$user) {
                 // 2. Create New User & Guardian Profile
                 $userData = [
                     'full_name' => $validated['full_name'],
-                    'email' => $validated['email'],
-                    'phone' => $validated['phone'],
-                    'password' => $validated['password'] ?? 'password123', // Default if none
+                    'email' => $validated['email'] ?? null,
+                    'phone' => $validated['phone'] ?? null,
+                    'password' => $validated['password'] ?? 'password123',
                     'user_type' => 'PARENT',
                     'roles' => ['Parent'],
                 ];
 
                 // Get branch from student to scope the role? 
                 // Mostly parents are global or auto-linked to student branch.
-                $student = Student::findOrFail($studentId);
+                $student = Student::findOrFail($id);
                 $enrollment = $student->enrollments()->where('status', 'ACTIVE')->first();
                 if ($enrollment) {
                     $userData['branch_id'] = $enrollment->section->grade->branch_id;
@@ -153,7 +159,7 @@ class StudentController extends Controller
 
             // 3. Link to student
             $this->guardianService->linkStudent([
-                'student_id' => $studentId,
+                'student_id' => $id,
                 'parent_user_id' => $user->id,
                 'relationship' => $validated['relationship'],
                 'is_primary' => $validated['is_primary'] ?? false
@@ -172,10 +178,10 @@ class StudentController extends Controller
         }
     }
 
-    public function unlinkGuardian(Request $request, int $studentId, int $guardianId): JsonResponse
+    public function unlinkGuardian(Request $request, int $id, int $guardianId): JsonResponse
     {
         try {
-            $student = Student::findOrFail($studentId);
+            $student = Student::findOrFail($id);
             $guardian = Guardian::findOrFail($guardianId);
 
             // We must detach using the user_id because that's what the relationship is linked on
@@ -187,7 +193,7 @@ class StudentController extends Controller
         }
     }
 
-    public function updateGuardian(Request $request, int $studentId, int $guardianId): JsonResponse
+    public function updateGuardian(Request $request, int $id, int $guardianId): JsonResponse
     {
         try {
             $validated = $request->validate([
@@ -209,7 +215,7 @@ class StudentController extends Controller
             ]);
 
             // Update the relationship in the pivot table
-            $student = Student::findOrFail($studentId);
+            $student = Student::findOrFail($id);
             $student->guardians()->updateExistingPivot($user->id, [
                 'relationship' => $validated['relationship'],
                 'is_primary' => $validated['is_primary'] ?? false

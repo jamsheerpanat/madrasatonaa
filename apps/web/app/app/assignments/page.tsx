@@ -55,7 +55,7 @@ export default function AssignmentsPage() {
                     const children = await childRes.json();
                     if (children.length > 0) {
                         const activeChild = childId ? children.find((c: any) => c.student.id.toString() === childId) : children[0];
-                        if (activeChild) {
+                        if (activeChild?.student?.enrollments) {
                             const enrollment = activeChild.student.enrollments.find((e: any) => e.status === 'ACTIVE');
                             if (enrollment) {
                                 const res = await apiClient(`/assignments/section/${enrollment.section_id}?child_student_id=${activeChild.student.id}`);

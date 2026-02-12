@@ -12,6 +12,9 @@ import { apiClient } from '../../services/apiClient';
 export function ParentDashboard() {
     const { me, loading: meLoading } = useMe();
     const [children, setChildren] = useState<any[]>([]);
+    const [assignments, setAssignments] = useState<any[]>([]);
+    const [tickets, setTickets] = useState<any[]>([]);
+
     const [selectedChild, setSelectedChild] = useState(0);
     const [loading, setLoading] = useState(true);
     const [attendance, setAttendance] = useState<any[]>([]);
@@ -36,17 +39,49 @@ export function ParentDashboard() {
     const activeChild = children[selectedChild];
 
     useEffect(() => {
-        if (activeChild) {
-            apiClient(`/attendance/child/${activeChild.id}/month`)
-                .then(r => r.json())
-                .then(data => {
-                    if (Array.isArray(data)) setAttendance(data);
-                })
-                .catch(console.error);
+        async function fetchData() {
+            if (!activeChild) return;
+
+            setLoading(true);
+            try {
+                // 1. Attendance
+                apiClient(`/attendance/child/${activeChild.id}/month`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (Array.isArray(data)) setAttendance(data);
+                    })
+                    .catch(console.error);
+
+                // 2. Assignments
+                const enrollment = activeChild.enrollments?.find((e: any) => e.status === 'ACTIVE');
+                if (enrollment) {
+                    const res = await apiClient(`/assignments/section/${enrollment.section_id}?child_student_id=${activeChild.id}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setAssignments(data.slice(0, 5)); // Top 5
+                    }
+                } else {
+                    setAssignments([]);
+                }
+
+                // 3. Tickets (Messages)
+                const ticketRes = await apiClient('/tickets');
+                if (ticketRes.ok) {
+                    const data = await ticketRes.json();
+                    setTickets(data.data || data); // Handle pagination or array
+                }
+
+            } catch (error) {
+                console.error("Dashboard data fetch error:", error);
+            } finally {
+                setLoading(false);
+            }
         }
+
+        if (activeChild) fetchData();
     }, [activeChild]);
 
-    if (meLoading || loading) return <div className="p-8 text-center text-slate-500 font-medium">Loading Portal...</div>;
+    if (meLoading) return <div className="p-8 text-center text-slate-500 font-medium">Loading Portal...</div>;
 
     const user = me?.user || me;
     if (!user) return null;
@@ -55,7 +90,7 @@ export function ParentDashboard() {
     const presentCount = attendance.filter(r => r.status === 'PRESENT').length;
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500 pb-10">
             {/* Parent Hero */}
             <div className="bg-gradient-to-r from-teal-600 to-emerald-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl shadow-teal-200">
                 <div className="absolute top-0 right-0 p-8 opacity-10">
@@ -121,51 +156,59 @@ export function ParentDashboard() {
                 <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                            <Users className="w-6 h-6 text-teal-500" /> Activity Feed {activeChild && `for ${activeChild.first_name_en}`}
+                            <Users className="w-6 h-6 text-teal-500" /> Recent Assignments
                         </h2>
-                        <Link href="/app/timeline" className="text-sm font-bold text-teal-600 bg-teal-50 px-3 py-1 rounded-lg hover:bg-teal-100">View Full Timeline</Link>
+                        <Link href="/app/assignments" className="text-sm font-bold text-teal-600 bg-teal-50 px-3 py-1 rounded-lg hover:bg-teal-100">View All</Link>
                     </div>
 
                     <div className="space-y-6 relative pl-4 border-l-2 border-slate-100 ml-2">
-                        {activeChild ? (
-                            <div className="relative pl-6">
-                                <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-blue-500 border-4 border-white shadow-sm" />
-                                <p className="text-sm text-slate-500 mb-1 font-mono text-xs">Today</p>
-                                <h4 className="font-bold text-slate-900 text-lg">Academic Update</h4>
-                                <p className="text-slate-600 mt-1 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                                    {activeChild.first_name_en} is currently enrolled in {activeChild.enrollments?.[0]?.section?.grade?.name || 'their assigned grade'}.
+                        {assignments.length > 0 ? assignments.map((assignment: any) => (
+                            <div key={assignment.id} className="relative pl-6">
+                                <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-4 border-white shadow-sm ${new Date(assignment.due_at) < new Date() ? 'bg-red-500' : 'bg-blue-500'
+                                    }`} />
+                                <p className="text-sm text-slate-500 mb-1 font-mono text-xs">Due {new Date(assignment.due_at).toLocaleDateString()}</p>
+                                <h4 className="font-bold text-slate-900 text-lg hover:text-blue-600 cursor-pointer">
+                                    <Link href={`/app/assignments/${assignment.id}`}>{assignment.title_en}</Link>
+                                </h4>
+                                <p className="text-slate-600 mt-1 bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm line-clamp-2">
+                                    {assignment.description_en || 'No description provided.'}
                                 </p>
                             </div>
-                        ) : (
-                            <p className="text-slate-400 italic">No activity to show</p>
+                        )) : (
+                            <div className="text-center py-8">
+                                <p className="text-slate-400 italic">No recent assignments found.</p>
+                            </div>
                         )}
-
-                        <div className="relative pl-6 opacity-75">
-                            <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-green-500 border-4 border-white shadow-sm" />
-                            <p className="text-sm text-slate-500 mb-1 font-mono text-xs">Yesterday, 02:30 PM</p>
-                            <h4 className="font-bold text-slate-900 text-lg">Bus Arrived Home</h4>
-                            <p className="text-slate-600 mt-1">
-                                Transport notification: Drop-off confirmed at home location.
-                            </p>
-                        </div>
                     </div>
                 </div>
 
-                {/* Messages / Quick Contacts */}
+                {/* Messages / Tickets */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                    <h2 className="text-xl font-bold text-slate-900 mb-6 icon-text"><MessageCircle className="w-5 h-5" /> Recent Messages</h2>
+                    <h2 className="text-xl font-bold text-slate-900 mb-6 icon-text flex items-center gap-2">
+                        <MessageCircle className="w-5 h-5 text-indigo-500" /> Recent Tickets
+                    </h2>
+
                     <div className="space-y-4">
-                        <div className="flex gap-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                            <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">MR</div>
-                            <div>
-                                <h4 className="font-bold text-slate-900 text-sm">Mr. Roberts</h4>
-                                <p className="text-xs text-slate-500 font-medium">Math Teacher</p>
-                                <p className="text-xs text-slate-700 mt-1 line-clamp-1"> regarding the upcoming exam schedule...</p>
+                        {tickets.length > 0 ? tickets.slice(0, 3).map((ticket: any) => (
+                            <div key={ticket.id} className="flex gap-4 p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-indigo-200 transition-colors">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${ticket.status === 'OPEN' ? 'bg-green-100 text-green-600' :
+                                    ticket.status === 'CLOSED' ? 'bg-slate-200 text-slate-500' : 'bg-amber-100 text-amber-600'
+                                    }`}>
+                                    {ticket.status === 'IN_PROGRESS' ? 'WIP' : ticket.status}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="font-bold text-slate-900 text-sm truncate">{ticket.subject}</h4>
+                                    <p className="text-xs text-slate-500 font-medium">#{ticket.ticket_code}</p>
+                                    <p className="text-xs text-slate-700 mt-1 line-clamp-1">{ticket.message}</p>
+                                </div>
                             </div>
-                        </div>
-                        <button className="w-full py-3 mt-4 text-teal-600 font-bold bg-teal-50 rounded-xl hover:bg-teal-100 transition-colors flex items-center justify-center gap-2">
-                            <MessageCircle className="w-4 h-4" /> Message Teachers
-                        </button>
+                        )) : (
+                            <p className="text-slate-400 text-center italic py-4">No support tickets found.</p>
+                        )}
+
+                        <Link href="/app/tickets/new" className="w-full py-3 mt-4 text-teal-600 font-bold bg-teal-50 rounded-xl hover:bg-teal-100 transition-colors flex items-center justify-center gap-2">
+                            <MessageCircle className="w-4 h-4" /> Open New Ticket
+                        </Link>
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-slate-100">

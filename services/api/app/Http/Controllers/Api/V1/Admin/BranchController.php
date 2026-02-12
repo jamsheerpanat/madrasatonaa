@@ -7,8 +7,17 @@ use App\Models\Branch;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+use App\Services\CodeGeneratorService;
+
 class BranchController extends Controller
 {
+    protected $codeGenerator;
+
+    public function __construct(CodeGeneratorService $codeGenerator)
+    {
+        $this->codeGenerator = $codeGenerator;
+    }
+
     /**
      * Update an existing branch.
      */
@@ -18,7 +27,7 @@ class BranchController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'code' => 'sometimes|required|string|unique:branches,code,' . $branch,
+            'code' => 'sometimes|string|unique:branches,code,' . $branch,
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
             'email' => 'nullable|email',
@@ -40,12 +49,16 @@ class BranchController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|unique:branches,code',
+            'code' => 'nullable|string|unique:branches,code',
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
             'email' => 'nullable|email',
             'is_active' => 'boolean',
         ]);
+
+        if (empty($validated['code'])) {
+            $validated['code'] = $this->codeGenerator->generate(Branch::class, 'BR', 'code', 3);
+        }
 
         $branch = Branch::create($validated);
 

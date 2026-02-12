@@ -183,8 +183,11 @@ export default function StaffProfilePage() {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
                         <h3 className="text-lg font-bold mb-2 relative z-10">Administrative Actions</h3>
                         <div className="space-y-2 relative z-10">
-                            <button className="w-full text-left px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                                <Shield className="w-4 h-4" /> Change Role Permissions
+                            <button
+                                onClick={() => router.push(`/app/admin/staff/${id}/edit`)}
+                                className="w-full text-left px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                            >
+                                <Briefcase className="w-4 h-4" /> Edit Profile Details
                             </button>
                             <button
                                 onClick={async () => {

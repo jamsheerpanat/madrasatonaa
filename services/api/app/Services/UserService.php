@@ -7,8 +7,16 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
+
 class UserService
 {
+    protected $codeGenerator;
+
+    public function __construct(CodeGeneratorService $codeGenerator)
+    {
+        $this->codeGenerator = $codeGenerator;
+    }
+
     /**
      * Create a new user (Staff or Parent).
      */
@@ -45,9 +53,16 @@ class UserService
 
         // 5. Create Profile if Staff
         if ($data['user_type'] === 'STAFF') {
+            $empCode = $data['employee_code'] ?? null;
+
+            if (!$empCode) {
+                // Auto-generate employee code
+                $empCode = $this->codeGenerator->generate(\App\Models\StaffProfile::class, 'EMP', 'employee_code');
+            }
+
             $user->staffProfile()->create([
                 'branch_id' => $data['branch_id'] ?? null,
-                'employee_code' => $data['employee_code'] ?? null,
+                'employee_code' => $empCode,
                 'job_title' => $data['job_title'] ?? null,
             ]);
         }
@@ -69,5 +84,47 @@ class UserService
         ]);
 
         return $user;
+    }
+
+    public function updateUser(User $user, array $data)
+    {
+        // 1. Update Basic Info
+        $user->update([
+            'full_name' => $data['full_name'] ?? $user->full_name,
+            'email' => $data['email'] ?? $user->email,
+            'phone' => $data['phone'] ?? $user->phone,
+        ]);
+
+        // 2. Update Password if provided
+        if (!empty($data['password'])) {
+            $user->update(['password' => Hash::make($data['password'])]);
+        }
+
+        // 3. Sync Roles
+        if (isset($data['roles']) && is_array($data['roles'])) {
+            // Detach existing roles (simplified for now, ideally scope by branch)
+            $user->roles()->detach();
+
+            $roles = Role::whereIn('name', $data['roles'])->get();
+            $branchId = $data['branch_id'] ?? 1; // Default to main branch for now
+
+            foreach ($roles as $role) {
+                $user->roles()->attach($role->id, ['branch_id' => $branchId]);
+            }
+        }
+
+        // 4. Update Profile if Staff
+        if ($user->user_type === 'STAFF') {
+            $user->staffProfile()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'branch_id' => $data['branch_id'] ?? 1,
+                    'employee_code' => $data['employee_code'] ?? null,
+                    'job_title' => $data['job_title'] ?? null,
+                ]
+            );
+        }
+
+        return $user->refresh();
     }
 }

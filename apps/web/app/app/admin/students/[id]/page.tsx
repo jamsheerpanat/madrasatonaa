@@ -546,11 +546,16 @@ function AddGuardianModal({ studentId, onClose, onSuccess }: { studentId: string
             if (!res.ok) {
                 const data = await res.json();
                 let msg = 'Failed to add guardian';
+
                 if (data.error) {
-                    msg = data.error.message || msg;
-                    if (data.error.details) {
-                        const firstError = Object.values(data.error.details)[0];
-                        if (Array.isArray(firstError)) msg = firstError[0];
+                    if (typeof data.error === 'string') {
+                        msg = data.error;
+                    } else {
+                        msg = data.error.message || msg;
+                        if (data.error.details) {
+                            const firstError = Object.values(data.error.details)[0];
+                            if (Array.isArray(firstError)) msg = firstError[0];
+                        }
                     }
                 } else if (data.message) {
                     msg = data.message;
