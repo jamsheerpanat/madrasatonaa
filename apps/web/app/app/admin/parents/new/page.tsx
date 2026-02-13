@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '../../../../services/apiClient';
+import { apiClient } from '../../../../../services/apiClient';
 import { ArrowLeft, UserPlus, Save } from 'lucide-react';
 import Link from 'next/link';
 

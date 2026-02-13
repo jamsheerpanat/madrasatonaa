@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { apiClient } from '../../../../services/apiClient';
-import { LoadingState } from '../../../../components/LoadingState';
+import { apiClient } from '../../../../../services/apiClient';
+import { LoadingState } from '../../../../../components/LoadingState';
 import { ArrowLeft, User, Phone, Mail, FileText, Plus, Trash2, X, Search, Check } from 'lucide-react';
 import Link from 'next/link';
 
