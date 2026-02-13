@@ -43,6 +43,7 @@ class ExamService
     {
         return Exam::where('section_id', $sectionId)
             ->where('term_id', $termId)
+            ->with(['subject'])
             ->orderBy('exam_date')
             ->get();
     }

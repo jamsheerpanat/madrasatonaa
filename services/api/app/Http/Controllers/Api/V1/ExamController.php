@@ -121,7 +121,7 @@ class ExamController extends Controller
     {
         if (!AuthContext::hasPermission('exams.view'))
             abort(403);
-        $exam = Exam::with(['marks'])->findOrFail($id);
+        $exam = Exam::with(['marks', 'subject'])->findOrFail($id);
 
         $user = AuthContext::user();
         if ($user->user_type === 'PARENT') {

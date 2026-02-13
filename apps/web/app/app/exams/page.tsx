@@ -204,8 +204,7 @@ export default function ExamsPage() {
 
                                 <div className="pl-3 mb-6">
                                     <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors mb-1">
-                                        Subject ID: {exam.subject_id}
-                                        {/* TODO: Fetch subject name or include in relationship */}
+                                        {exam.subject?.name_en || `Subject ID: ${exam.subject_id}`}
                                     </h3>
                                     <p className="text-slate-500 text-sm">
                                         Max Marks: <span className="font-semibold text-slate-900">{exam.max_grade}</span>
