@@ -19,7 +19,7 @@ export default function ParentDetailsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [selectedStudent, setSelectedStudent] = useState<any>(null);
-    const [relationship, setRelationship] = useState('Parent');
+    const [relationship, setRelationship] = useState('FATHER');
     const [isLinking, setIsLinking] = useState(false);
 
     const fetchGuardian = async () => {
@@ -278,11 +278,11 @@ export default function ParentDetailsPage() {
                                             value={relationship}
                                             onChange={(e) => setRelationship(e.target.value)}
                                         >
-                                            <option value="Father">Father</option>
-                                            <option value="Mother">Mother</option>
-                                            <option value="Guardian">Guardian</option>
-                                            <option value="Sibling">Sibling</option>
-                                            <option value="Relative">Relative</option>
+                                            <option value="FATHER">Father</option>
+                                            <option value="MOTHER">Mother</option>
+                                            <option value="GUARDIAN">Guardian</option>
+                                            <option value="SIBLING">Sibling</option>
+                                            <option value="RELATIVE">Relative</option>
                                         </select>
                                     </div>
 
