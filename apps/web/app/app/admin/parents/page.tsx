@@ -113,7 +113,7 @@ export default function ParentsPage() {
 
                             <div className="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center">
                                 <div className="flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg">
-                                    <Child className="w-4 h-4 text-slate-400" />
+                                    <ChildIcon className="w-4 h-4 text-slate-400" />
                                     {guardian.students?.length || 0} Children Linked
                                 </div>
                                 <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-orange-500 transition-colors" />
@@ -136,7 +136,7 @@ export default function ParentsPage() {
     );
 }
 
-function Child({ className }: { className?: string }) {
+function ChildIcon({ className }: { className?: string }) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
             <path d="M16 10a4 4 0 0 1-8 0" />
