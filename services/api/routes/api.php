@@ -198,6 +198,16 @@ Route::prefix('v1')->group(function () {
             Route::post('/students/{id}/add-guardian', [StudentController::class, 'addGuardian'])
                 ->middleware('permission:students.update');
 
+            // Guardian Management
+            Route::prefix('guardians')->group(function () {
+                Route::get('/', [App\Http\Controllers\Api\V1\Admin\GuardianController::class, 'index']);
+                Route::post('/', [App\Http\Controllers\Api\V1\Admin\GuardianController::class, 'store']);
+                Route::get('/{id}', [App\Http\Controllers\Api\V1\Admin\GuardianController::class, 'show']);
+                Route::put('/{id}', [App\Http\Controllers\Api\V1\Admin\GuardianController::class, 'update']);
+                Route::post('/{id}/link-student', [App\Http\Controllers\Api\V1\Admin\GuardianController::class, 'linkStudent']);
+                Route::delete('/{id}/link-student/{studentId}', [App\Http\Controllers\Api\V1\Admin\GuardianController::class, 'unlinkStudent']);
+            });
+
             Route::delete('/students/{id}/guardians/{guardianId}', [StudentController::class, 'unlinkGuardian'])
                 ->middleware('permission:students.update');
 
