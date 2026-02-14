@@ -41,12 +41,12 @@ class ParentOtpService
         }
 
         // 4. Return
-        if (config('app.env') === 'local') {
-            return [
-                'status' => 'otp_generated',
-                'otp_dev_code' => $otp
-            ];
-        }
+        // if (config('app.env') === 'local') {
+        return [
+            'status' => 'otp_generated',
+            'otp_dev_code' => $otp
+        ];
+        // }
 
         return ['status' => 'otp_sent'];
     }
