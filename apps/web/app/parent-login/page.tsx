@@ -5,59 +5,32 @@ import { useRouter } from 'next/navigation';
 
 export default function ParentLogin() {
     const router = useRouter();
-    const [phone, setPhone] = useState('');
-    const [otp, setOtp] = useState('');
-    const [step, setStep] = useState(1);
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const requestOtp = async (e: React.FormEvent) => {
+    const login = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
         try {
-            const res = await fetch('http://localhost:8000/api/v1/auth/parent/request-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone })
-            });
-            const data = await res.json();
-            if (!res.ok) {
-                const errorMsg = data.error?.message || data.message || 'Failed to send OTP';
-                throw new Error(errorMsg);
-            }
-
-            // For MVP development, if OTP is returned in response (debug), show it
-            const devOtp = data.otp_dev_code || data.debug_otp;
-            if (devOtp) alert(`Debug OTP: ${devOtp}`);
-
-            setStep(2);
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const verifyOtp = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
-        try {
-            const res = await fetch('http://localhost:8000/api/v1/auth/parent/verify-otp', {
+            const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
+            const res = await fetch(`${baseUrl}/auth/parent/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    phone,
-                    otp,
+                    username,
+                    password,
                     device_id: 'web-dev-1',
                     device_name: 'Web Browser',
                     platform: 'WEB'
                 })
             });
             const data = await res.json();
+
             if (!res.ok) {
-                const errorMsg = data.error?.message || data.message || 'Verification failed';
+                const errorMsg = data.error?.message || data.message || 'Login failed';
                 throw new Error(errorMsg);
             }
 
@@ -65,6 +38,7 @@ export default function ParentLogin() {
             if (data.refresh_token) localStorage.setItem('refresh_token', data.refresh_token);
             localStorage.setItem('last_login_type', 'parent');
 
+            // Force reload to update auth state context if needed, or just push
             router.push('/app');
         } catch (err: any) {
             setError(err.message);
@@ -76,43 +50,37 @@ export default function ParentLogin() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50">
             <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-slate-100 flex flex-col items-center">
-                <img src="/logo.png" alt="Madrasatonaa" className="h-10 w-auto mb-6" />
-                <h1 className="text-2xl font-bold mb-6 text-center text-slate-900 tracking-tight">Parent Portal</h1>
 
-                {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>}
+                {/* Placeholder Logo */}
+                <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-green-200">
+                    <span className="text-2xl font-bold text-white">M</span>
+                </div>
 
-                {step === 1 ? (
-                    <form onSubmit={requestOtp} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Phone Number</label>
-                            <input className="w-full border p-2 rounded" type="tel" required placeholder="e.g. 12345678"
-                                value={phone} onChange={e => setPhone(e.target.value)}
-                            />
-                        </div>
-                        <button disabled={loading} className="w-full py-2 bg-green-600 text-white rounded font-bold hover:bg-green-700 disabled:opacity-50">
-                            {loading ? 'Sending OTP...' : 'Request OTP'}
-                        </button>
-                    </form>
-                ) : (
-                    <form onSubmit={verifyOtp} className="space-y-4">
-                        <div className="text-sm text-gray-500 mb-2">OTP sent to {phone}</div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">OTP Code</label>
-                            <input className="w-full border p-2 rounded tracking-widest text-center text-xl" type="text" required
-                                value={otp} onChange={e => setOtp(e.target.value)}
-                            />
-                        </div>
-                        <button disabled={loading} className="w-full py-2 bg-green-600 text-white rounded font-bold hover:bg-green-700 disabled:opacity-50">
-                            {loading ? 'Verifying...' : 'Verify & Login'}
-                        </button>
-                        <button type="button" onClick={() => setStep(1)} className="w-full py-2 text-sm text-gray-500 hover:text-gray-700">
-                            Change Phone Number
-                        </button>
-                    </form>
-                )}
+                <h1 className="text-2xl font-bold mb-2 text-center text-slate-900 tracking-tight">Parent Portal</h1>
+                <p className="text-slate-500 mb-6 text-sm">Please sign in to continue</p>
 
-                <div className="mt-4 text-center">
-                    <a href="/" className="text-sm text-green-600 hover:underline">Back to Home</a>
+                {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm w-full text-center">{error}</div>}
+
+                <form onSubmit={login} className="space-y-4 w-full">
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Email or Phone</label>
+                        <input className="w-full border border-slate-300 p-2.5 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" type="text" required placeholder="e.g. parent@example.com"
+                            value={username} onChange={e => setUsername(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Password</label>
+                        <input className="w-full border border-slate-300 p-2.5 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" type="password" required placeholder="******"
+                            value={password} onChange={e => setPassword(e.target.value)}
+                        />
+                    </div>
+                    <button disabled={loading} className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 disabled:opacity-50 shadow-lg shadow-green-200 transition-all active:scale-95">
+                        {loading ? 'Logging in...' : 'Login'}
+                    </button>
+                </form>
+
+                <div className="mt-6 text-center w-full pt-6 border-t border-slate-100">
+                    <a href="/" className="text-sm font-medium text-slate-500 hover:text-green-600 transition-colors">Back to Home</a>
                 </div>
             </div>
         </div>

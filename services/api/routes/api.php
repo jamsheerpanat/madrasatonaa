@@ -31,8 +31,9 @@ Route::prefix('v1')->group(function () {
     // Auth
     Route::prefix('auth')->group(function () {
         Route::post('/staff/login', [StaffAuthController::class, 'login']);
-        Route::post('/parent/request-otp', [ParentAuthController::class, 'requestOtp']);
-        Route::post('/parent/verify-otp', [ParentAuthController::class, 'verifyOtp']);
+        // Route::post('/parent/request-otp', [ParentAuthController::class, 'requestOtp']);
+        // Route::post('/parent/verify-otp', [ParentAuthController::class, 'verifyOtp']);
+        Route::post('/parent/login', [ParentAuthController::class, 'login']);
         Route::post('/refresh', [SessionController::class, 'refresh']);
         Route::post('/logout', [SessionController::class, 'logout']);
     });

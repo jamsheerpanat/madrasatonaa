@@ -59,6 +59,20 @@ class AuthService
         return $this->createSession($user, $deviceInfo);
     }
 
+    public function parentLoginPassword(string $login, string $password, array $deviceInfo)
+    {
+        $login = trim($login);
+        $user = User::where(function ($q) use ($login) {
+            $q->where('email', $login)->orWhere('phone', $login);
+        })->where('user_type', 'PARENT')->first();
+
+        if (!$user || !Hash::check($password, $user->password)) {
+            throw ValidationException::withMessages(['login' => 'Invalid credentials.']);
+        }
+
+        return $this->createSession($user, $deviceInfo);
+    }
+
     protected function createSession(User $user, array $deviceInfo)
     {
         return DB::transaction(function () use ($user, $deviceInfo) {
