@@ -3,6 +3,7 @@
 # Configuration
 SERVER_IP="76.13.76.173"
 SERVER_USER="root"
+SSH_PORT="22"
 SSH_KEY="~/.ssh/id_rsa_madrasatonaa"
 LOCAL_API_DIR="services/api"
 REMOTE_API_DIR="/var/www/madrasatonaa/services/api"
@@ -22,7 +23,7 @@ echo "🔄 Overwriting Server Database with Clean Base..."
 cp "$LOCAL_API_DIR/database/database.sqlite" "$PRODUCTION_DB_BACKUP"
 
 if [ -f "$PRODUCTION_DB_BACKUP" ]; then
-    rsync -avz -e "ssh -i $SSH_KEY" "$PRODUCTION_DB_BACKUP" "$SERVER_USER@$SERVER_IP:$REMOTE_API_DIR/database/database.sqlite"
+    rsync -avz -e "ssh -p $SSH_PORT -i $SSH_KEY" "$PRODUCTION_DB_BACKUP" "$SERVER_USER@$SERVER_IP:$REMOTE_API_DIR/database/database.sqlite"
 else
     echo "❌ Error: production_base.sqlite not found! Run migration locally first."
     exit 1
@@ -30,7 +31,7 @@ fi
 
 # 3. Server Deployment Commands
 echo "🔧 Running Server Deployment Scripts..."
-ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP <<EOF
+ssh -p $SSH_PORT -i $SSH_KEY $SERVER_USER@$SERVER_IP <<EOF
     # API Setup
     cd $REMOTE_API_DIR
     git reset --hard HEAD
