@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '../../../../services/apiClient';
 import { LoadingState } from '../../../../components/LoadingState';
-import { UserCheck, UserPlus, Search, Mail, Phone, MoreVertical, Child, ArrowRight } from 'lucide-react';
+import { UserCheck, UserPlus, Search, Mail, Phone, MoreVertical, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ParentsPage() {
