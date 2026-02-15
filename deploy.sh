@@ -52,7 +52,7 @@ ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP <<EOF
     # We rebuild next.js to ensure latest code is active
     npm install
     # Ensure .env.local exists
-    echo "NEXT_PUBLIC_API_BASE_URL=http://madrasatonaa.octolabs.cloud/api/v1" > .env.local
+    echo "NEXT_PUBLIC_API_BASE_URL=https://madrasatonaa.octolabs.cloud/api/v1" > .env.local
     npm run build
     pm2 restart madrasatonaa-web
 
