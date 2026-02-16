@@ -22,6 +22,18 @@ export default function ParentDetailsPage() {
     const [relationship, setRelationship] = useState('FATHER');
     const [isLinking, setIsLinking] = useState(false);
 
+    // Edit State
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [editForm, setEditForm] = useState({
+        full_name: '',
+        username: '',
+        email: '',
+        phone: '',
+        national_id: '',
+        password: ''
+    });
+
     const fetchGuardian = async () => {
         try {
             const res = await apiClient(`/admin/guardians/${id}`);
@@ -29,11 +41,40 @@ export default function ParentDetailsPage() {
                 const data = await res.json();
                 setGuardian(data);
                 setStudents(data.students || []);
+                setEditForm({
+                    full_name: data.user?.full_name || '',
+                    username: data.user?.username || '',
+                    email: data.user?.email || '',
+                    phone: data.user?.phone || '',
+                    national_id: data.national_id || '',
+                    password: ''
+                });
             }
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleUpdate = async () => {
+        setIsSaving(true);
+        try {
+            const res = await apiClient(`/admin/guardians/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(editForm)
+            });
+            if (res.ok) {
+                setIsEditModalOpen(false);
+                fetchGuardian();
+            } else {
+                const data = await res.json();
+                alert(data.message || 'Failed to update profile');
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -134,7 +175,7 @@ export default function ParentDetailsPage() {
                         <div className="space-y-4">
                             <div className="flex items-center gap-3 text-sm text-slate-600">
                                 <Mail className="w-4 h-4 text-slate-400" />
-                                <span className="truncate">{guardian.user?.email}</span>
+                                <span className="truncate">{guardian.user?.email || 'No Email'}</span>
                             </div>
                             <div className="flex items-center gap-3 text-sm text-slate-600">
                                 <Phone className="w-4 h-4 text-slate-400" />
@@ -144,9 +185,16 @@ export default function ParentDetailsPage() {
                                 <FileText className="w-4 h-4 text-slate-400" />
                                 <span>Nat ID: {guardian.national_id || '-'}</span>
                             </div>
+                            <div className="flex items-center gap-3 text-sm text-slate-600 font-medium">
+                                <User className="w-4 h-4 text-orange-400" />
+                                <span>Username: {guardian.user?.username || 'Not Set'}</span>
+                            </div>
                         </div>
 
-                        <button className="w-full mt-6 py-2 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+                        <button
+                            onClick={() => setIsEditModalOpen(true)}
+                            className="w-full mt-6 py-2 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                        >
                             Edit Profile
                         </button>
                     </div>
@@ -295,6 +343,96 @@ export default function ParentDetailsPage() {
                                     </button>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Profile Modal */}
+            {isEditModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
+                        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <h3 className="font-bold text-slate-900">Edit Guardian Profile</h3>
+                            <button onClick={() => setIsEditModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Full Name</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-100"
+                                        value={editForm.full_name}
+                                        onChange={e => setEditForm({ ...editForm, full_name: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Username</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-100"
+                                        value={editForm.username}
+                                        onChange={e => setEditForm({ ...editForm, username: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email</label>
+                                    <input
+                                        type="email"
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-100"
+                                        value={editForm.email}
+                                        onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Phone</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-100"
+                                        value={editForm.phone}
+                                        onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">National ID</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-100"
+                                        value={editForm.national_id}
+                                        onChange={e => setEditForm({ ...editForm, national_id: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">New Password (Optional)</label>
+                                    <input
+                                        type="password"
+                                        placeholder="Leave blank to keep current"
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-100"
+                                        value={editForm.password}
+                                        onChange={e => setEditForm({ ...editForm, password: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
+                            <button
+                                onClick={() => setIsEditModalOpen(false)}
+                                className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleUpdate}
+                                disabled={isSaving}
+                                className="px-6 py-2 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-all"
+                            >
+                                {isSaving ? 'Saving...' : 'Save Changes'}
+                            </button>
                         </div>
                     </div>
                 </div>

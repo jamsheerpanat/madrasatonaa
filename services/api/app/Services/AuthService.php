@@ -63,7 +63,9 @@ class AuthService
     {
         $login = trim($login);
         $user = User::where(function ($q) use ($login) {
-            $q->where('email', $login)->orWhere('phone', $login);
+            $q->where('email', $login)
+                ->orWhere('phone', $login)
+                ->orWhere('username', $login);
         })->where('user_type', 'PARENT')->first();
 
         if (!$user || !Hash::check($password, $user->password)) {

@@ -63,8 +63,8 @@ export default function ParentLogin() {
 
                 <form onSubmit={login} className="space-y-4 w-full">
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Email or Phone</label>
-                        <input className="w-full border border-slate-300 p-2.5 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" type="text" required placeholder="e.g. parent@example.com"
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Username, Email, or Phone</label>
+                        <input className="w-full border border-slate-300 p-2.5 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" type="text" required placeholder="Username, email, or phone"
                             value={username} onChange={e => setUsername(e.target.value)}
                         />
                     </div>

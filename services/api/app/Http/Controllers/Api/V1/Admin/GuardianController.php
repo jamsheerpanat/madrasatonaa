@@ -23,7 +23,8 @@ class GuardianController extends Controller
             $query->whereHas('user', function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%");
             })->orWhere('national_id', 'like', "%{$search}%");
         }
 
@@ -42,7 +43,8 @@ class GuardianController extends Controller
     {
         $request->validate([
             'full_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'username' => 'nullable|string|max:50|unique:users,username',
+            'email' => 'nullable|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'national_id' => 'nullable|string|max:50',
             'password' => 'required|string|min:6',
@@ -53,6 +55,7 @@ class GuardianController extends Controller
             // Create User
             $user = User::create([
                 'full_name' => $request->full_name,
+                'username' => $request->username,
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'password' => Hash::make($request->password),
@@ -88,7 +91,8 @@ class GuardianController extends Controller
 
         $request->validate([
             'full_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'username' => 'nullable|string|max:50|unique:users,username,' . $user->id,
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:20',
             'national_id' => 'nullable|string|max:50',
             'password' => 'nullable|string|min:6',
@@ -98,6 +102,7 @@ class GuardianController extends Controller
         try {
             $user->update([
                 'full_name' => $request->full_name,
+                'username' => $request->username,
                 'email' => $request->email,
                 'phone' => $request->phone,
             ]);

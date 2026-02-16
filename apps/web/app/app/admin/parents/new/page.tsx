@@ -13,6 +13,7 @@ export default function NewParentPage() {
 
     const [form, setForm] = useState({
         full_name: '',
+        username: '',
         email: '',
         phone: '',
         national_id: '',
@@ -75,6 +76,17 @@ export default function NewParentPage() {
                     </div>
 
                     <div className="space-y-2">
+                        <label className="text-sm font-bold text-slate-700">Username</label>
+                        <input
+                            type="text"
+                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-100 focus:border-orange-300 outline-none transition-all"
+                            value={form.username}
+                            onChange={e => setForm({ ...form, username: e.target.value })}
+                            placeholder="Optional login username"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
                         <label className="text-sm font-bold text-slate-700">National ID</label>
                         <input
                             type="text"
@@ -85,10 +97,9 @@ export default function NewParentPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-slate-700">Email Address</label>
+                        <label className="text-sm font-bold text-slate-700">Email Address (Optional if Username set)</label>
                         <input
                             type="email"
-                            required
                             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-100 focus:border-orange-300 outline-none transition-all"
                             value={form.email}
                             onChange={e => setForm({ ...form, email: e.target.value })}

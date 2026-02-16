@@ -70,7 +70,7 @@ export default function ParentsPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-orange-500 transition-colors" />
                 <input
                     type="text"
-                    placeholder="Search by name, email, phone or national ID..."
+                    placeholder="Search by name, username, email, phone or national ID..."
                     className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl text-slate-900 placeholder:text-slate-400 font-medium focus:ring-2 focus:ring-orange-100 focus:bg-white transition-all outline-none"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}

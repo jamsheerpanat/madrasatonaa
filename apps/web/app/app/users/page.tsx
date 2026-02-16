@@ -55,8 +55,8 @@ export default function UsersDirectoryPage() {
                     </div>
                 </Link>
 
-                {/* Parents (Coming Soon / Placeholder) */}
-                <div className="group relative bg-white rounded-2xl p-8 border border-slate-200 shadow-sm hover:shadow-xl hover:border-orange-200 transition-all duration-300 opacity-75 grayscale hover:grayscale-0">
+                {/* Parents */}
+                <Link href="/app/admin/parents" className="group relative bg-white rounded-2xl p-8 border border-slate-200 shadow-sm hover:shadow-xl hover:border-orange-200 transition-all duration-300">
                     <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
                         <UserCheck className="w-32 h-32 text-orange-600 -rotate-12 transform translate-x-8 -translate-y-8" />
                     </div>
@@ -66,14 +66,13 @@ export default function UsersDirectoryPage() {
                         </div>
                         <div className="flex justify-between items-start">
                             <h3 className="text-2xl font-bold text-slate-900 mb-2 group-hover:text-orange-600 transition-colors">Parents</h3>
-                            <span className="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] uppercase font-bold rounded-md tracking-wider">Coming Soon</span>
                         </div>
                         <p className="text-slate-500 font-medium mb-6">Manage guardian accounts and family relationships.</p>
-                        <span className="inline-flex items-center text-sm font-bold text-slate-400 group-hover:text-orange-600 group-hover:translate-x-2 transition-all">
+                        <span className="inline-flex items-center text-sm font-bold text-orange-600 group-hover:translate-x-2 transition-all">
                             View Directory <ArrowRight className="w-4 h-4 ml-2" />
                         </span>
                     </div>
-                </div>
+                </Link>
             </div>
 
             {/* Quick Actions */}
@@ -85,6 +84,9 @@ export default function UsersDirectoryPage() {
                     </Link>
                     <Link href="/app/admin/staff/new" className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:shadow-md hover:border-emerald-300 hover:text-emerald-600 transition-all flex items-center gap-2">
                         <Shield className="w-4 h-4" /> Add Staff Member
+                    </Link>
+                    <Link href="/app/admin/parents/new" className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 transition-all flex items-center gap-2">
+                        <UserPlus className="w-4 h-4" /> Register Parent
                     </Link>
                     <button className="px-6 py-3 bg-white border border-slate-200 text-slate-400 font-bold rounded-xl cursor-not-allowed flex items-center gap-2">
                         <Mail className="w-4 h-4" /> Send Bulk Invite (Soon)
